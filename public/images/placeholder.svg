@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Обложка недоступна">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e3153"/>
+      <stop offset="1" stop-color="#071f35"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" fill="url(#bg)"/>
+  <g fill="#4c6a90" transform="translate(300 380)">
+    <rect x="-90" y="-60" width="180" height="130" rx="18" fill="none" stroke="#4c6a90" stroke-width="10"/>
+    <circle cx="-42" cy="-4" r="16"/>
+    <circle cx="42" cy="-4" r="16"/>
+    <rect x="-70" y="90" width="140" height="16" rx="8" opacity="0.6"/>
+  </g>
+  <text x="300" y="620" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#8fa6c4">Нет обложки</text>
+</svg>

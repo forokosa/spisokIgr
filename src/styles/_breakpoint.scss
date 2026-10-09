@@ -1,0 +1,21 @@
+// Единая система брейкпоинтов приложения.
+$mobile: 768px;
+$tablet: 1100px;
+
+@mixin mobile {
+  @media (max-width: #{$mobile}) {
+    @content;
+  }
+}
+
+@mixin tablet-down {
+  @media (max-width: #{$tablet}) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: #{$mobile + 1px}) {
+    @content;
+  }
+}

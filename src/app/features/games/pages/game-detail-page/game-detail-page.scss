@@ -1,0 +1,149 @@
+@use '../../../../../styles/page';
+@use '../../../../../styles/breakpoint' as bp;
+
+.detail__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  color: var(--gt-text-muted);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.detail__back:hover {
+  color: var(--gt-text);
+}
+
+.detail__grid {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.detail__cover {
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+}
+
+.detail__info {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.detail__heading {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.detail__title {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.detail__year {
+  color: var(--gt-text-muted);
+  font-weight: 600;
+}
+
+.detail__meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.detail__rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--gt-warning);
+}
+
+.detail__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: rgba(11, 41, 68, 0.7);
+  border: 1px solid var(--gt-border);
+  font-size: 13px;
+  color: var(--gt-text-muted);
+}
+
+.tag i {
+  color: var(--gt-violet);
+}
+
+.detail__description {
+  color: #c4d4e8;
+  line-height: 1.65;
+  max-width: 70ch;
+}
+
+.detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.detail__done {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: var(--gt-radius-sm);
+  background: rgba(61, 214, 140, 0.12);
+  border: 1px solid rgba(61, 214, 140, 0.4);
+  color: #8cf0bb;
+  font-weight: 600;
+}
+
+.detail__status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 320px;
+}
+
+@include bp.tablet-down {
+  .detail__grid {
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+
+@include bp.mobile {
+  .detail__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail__cover {
+    max-width: 260px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .detail__title {
+    font-size: 24px;
+  }
+
+  .detail__actions .gt-btn {
+    flex: 1 1 100%;
+  }
+}

@@ -1,0 +1,182 @@
+<section class="page">
+  <a class="form__back" [routerLink]="isEdit() ? ['/games', id()] : ['/games']">
+    <i class="pi pi-arrow-left" aria-hidden="true"></i>Назад
+  </a>
+
+  <header class="page__head">
+    <div>
+      <h1 class="page__title">{{ isEdit() ? 'Редактирование игры' : 'Добавить игру' }}</h1>
+      <p class="page__subtitle">
+        {{ isEdit() ? 'Обновите данные игры и сохраните изменения.' : 'Заполните карточку новой игры.' }}
+      </p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading"><span class="gt-spinner" aria-hidden="true"></span>Загрузка данных…</div>
+  } @else {
+    <form class="form gt-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form__grid">
+        <div class="form__fields">
+          <div class="gt-field">
+            <label class="gt-field__label" for="game-title">Название *</label>
+            <input
+              id="game-title"
+              type="text"
+              class="gt-input"
+              [class.gt-input--invalid]="errorFor('title')"
+              formControlName="title"
+              placeholder="Например, The Witcher 3"
+            />
+            @if (errorFor('title'); as error) {
+              <span class="gt-field__error">{{ error }}</span>
+            }
+          </div>
+
+          <div class="form__row">
+            <div class="gt-field">
+              <label class="gt-field__label" for="game-genre">Жанр *</label>
+              <select
+                id="game-genre"
+                class="gt-select"
+                [class.gt-select--invalid]="errorFor('genre')"
+                formControlName="genre"
+              >
+                <option value="" disabled>Выберите жанр</option>
+                @for (genre of genres; track genre) {
+                  <option [value]="genre">{{ genre }}</option>
+                }
+              </select>
+              @if (errorFor('genre'); as error) {
+                <span class="gt-field__error">{{ error }}</span>
+              }
+            </div>
+
+            <div class="gt-field">
+              <label class="gt-field__label" for="game-platform">Платформа *</label>
+              <select
+                id="game-platform"
+                class="gt-select"
+                [class.gt-select--invalid]="errorFor('platform')"
+                formControlName="platform"
+              >
+                <option value="" disabled>Выберите платформу</option>
+                @for (platform of platforms; track platform) {
+                  <option [value]="platform">{{ platform }}</option>
+                }
+              </select>
+              @if (errorFor('platform'); as error) {
+                <span class="gt-field__error">{{ error }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form__row">
+            <div class="gt-field">
+              <label class="gt-field__label" for="game-status">Статус *</label>
+              <select id="game-status" class="gt-select" formControlName="status">
+                @for (status of statuses; track status) {
+                  <option [value]="status">{{ statusMeta[status].label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="gt-field">
+              <label class="gt-field__label" for="game-year">Год выпуска</label>
+              <input
+                id="game-year"
+                type="number"
+                class="gt-input"
+                [class.gt-input--invalid]="errorFor('releaseYear')"
+                formControlName="releaseYear"
+                placeholder="2023"
+                min="1970"
+              />
+              @if (errorFor('releaseYear'); as error) {
+                <span class="gt-field__error">{{ error }}</span>
+              }
+            </div>
+
+            <div class="gt-field">
+              <label class="gt-field__label" for="game-rating">Рейтинг (0–10)</label>
+              <input
+                id="game-rating"
+                type="number"
+                class="gt-input"
+                [class.gt-input--invalid]="errorFor('rating')"
+                formControlName="rating"
+                placeholder="9"
+                min="0"
+                max="10"
+                step="0.5"
+              />
+              @if (errorFor('rating'); as error) {
+                <span class="gt-field__error">{{ error }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="gt-field">
+            <label class="gt-field__label" for="game-description">Описание</label>
+            <textarea
+              id="game-description"
+              class="gt-textarea"
+              formControlName="description"
+              placeholder="Кратко опишите игру"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="form__cover">
+          <span class="gt-field__label">Обложка</span>
+          <div
+            class="dropzone"
+            [class.dropzone--active]="dragActive()"
+            (click)="fileInput.click()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave()"
+            (drop)="onDrop($event)"
+          >
+            @if (coverPreview()) {
+              <div class="dropzone__preview">
+                <app-cover-image [src]="coverPreview()" alt="Предпросмотр обложки" />
+              </div>
+            } @else {
+              <div class="dropzone__empty">
+                <i class="pi pi-image" aria-hidden="true"></i>
+                <span>Перетащите изображение или нажмите для выбора</span>
+                <small>JPG, PNG, WEBP · до {{ maxCoverMb }} МБ</small>
+              </div>
+            }
+          </div>
+          <input
+            #fileInput
+            type="file"
+            accept="image/*"
+            class="gt-sr-only"
+            aria-label="Загрузить обложку"
+            (change)="onFileInput($event)"
+          />
+          @if (coverPreview()) {
+            <button type="button" class="gt-btn gt-btn--sm" (click)="clearCover()">
+              <i class="pi pi-trash" aria-hidden="true"></i>Убрать обложку
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="form__actions">
+        <button type="button" class="gt-btn gt-btn--ghost" [disabled]="busy()" (click)="cancel()">
+          Отмена
+        </button>
+        <button type="submit" class="gt-btn gt-btn--primary" [disabled]="busy()">
+          @if (busy()) {
+            <span class="gt-spinner" aria-hidden="true"></span>Сохранение…
+          } @else {
+            <i class="pi pi-save" aria-hidden="true"></i>Сохранить
+          }
+        </button>
+      </div>
+    </form>
+  }
+</section>

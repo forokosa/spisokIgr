@@ -1,0 +1,102 @@
+<div class="shell">
+  <aside class="sidebar" [class.sidebar--open]="navOpen()">
+    <a class="brand" routerLink="/dashboard" (click)="closeNav()">
+      <span class="brand__logo"><i class="pi pi-desktop" aria-hidden="true"></i></span>
+      <span class="brand__name">GameTrack</span>
+    </a>
+
+    <nav class="nav" aria-label="Основная навигация">
+      @for (item of navItems; track item.path) {
+        <a
+          class="nav__item"
+          [routerLink]="item.path"
+          routerLinkActive="is-active"
+          (click)="closeNav()"
+        >
+          <i class="{{ item.icon }}" aria-hidden="true"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar__footer">
+      <a class="user" routerLink="/profile" (click)="closeNav()">
+        <span class="user__avatar">
+          <app-cover-image
+            [src]="profile()?.avatarUrl"
+            [alt]="'Аватар ' + (profile()?.name ?? '')"
+          />
+        </span>
+        <span class="user__info">
+          <span class="user__name">{{ profile()?.name ?? 'Гость' }}</span>
+          <span class="user__email">{{ profile()?.email ?? '' }}</span>
+        </span>
+      </a>
+    </div>
+  </aside>
+
+  @if (navOpen()) {
+    <div class="overlay" (click)="closeNav()" aria-hidden="true"></div>
+  }
+
+  <div class="main">
+    <header class="topbar">
+      <button
+        type="button"
+        class="icon-btn topbar__menu"
+        aria-label="Открыть меню"
+        (click)="toggleNav()"
+      >
+        <i class="pi pi-bars" aria-hidden="true"></i>
+      </button>
+
+      <label class="search">
+        <i class="pi pi-search search__icon" aria-hidden="true"></i>
+        <input
+          type="search"
+          class="search__input"
+          placeholder="Поиск по играм, жанрам и платформам"
+          aria-label="Поиск по играм, жанрам и платформам"
+          [value]="searchTerm()"
+          (input)="onSearchInput($event)"
+        />
+      </label>
+
+      <div class="topbar__user">
+        <button
+          type="button"
+          class="avatar-btn"
+          [attr.aria-expanded]="userMenuOpen()"
+          aria-haspopup="menu"
+          aria-label="Меню профиля"
+          (click)="toggleUserMenu()"
+        >
+          <span class="avatar-btn__img">
+            <app-cover-image
+              [src]="profile()?.avatarUrl"
+              [alt]="'Аватар ' + (profile()?.name ?? '')"
+            />
+          </span>
+          <span class="avatar-btn__name">{{ profile()?.name ?? 'Гость' }}</span>
+          <i class="pi pi-chevron-down" aria-hidden="true"></i>
+        </button>
+
+        @if (userMenuOpen()) {
+          <div class="menu-backdrop" (click)="closeUserMenu()" aria-hidden="true"></div>
+          <div class="menu" role="menu">
+            <a class="menu__item" role="menuitem" routerLink="/profile" (click)="closeUserMenu()">
+              <i class="pi pi-user" aria-hidden="true"></i>Профиль
+            </a>
+            <button type="button" class="menu__item menu__item--danger" role="menuitem" (click)="logout()">
+              <i class="pi pi-sign-out" aria-hidden="true"></i>Выйти
+            </button>
+          </div>
+        }
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>
