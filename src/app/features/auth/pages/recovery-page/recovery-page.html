@@ -1,0 +1,72 @@
+<div class="auth">
+  <aside class="auth__aside">
+    <div class="auth__scene" aria-hidden="true"></div>
+    <div class="auth__aside-content">
+      <div class="auth__brand">
+        <span class="auth__logo"><i class="pi pi-desktop" aria-hidden="true"></i></span>
+        <span class="auth__brand-name">GameTrack</span>
+      </div>
+      <div class="auth__pitch">
+        <i class="pi pi-play-circle auth__pad" aria-hidden="true"></i>
+        <h2>Вернитесь к своей коллекции</h2>
+        <p>Восстановление доступа в демонстрационном режиме.</p>
+      </div>
+    </div>
+  </aside>
+
+  <section class="auth__panel">
+    <div class="auth__form-wrap">
+      <a class="auth__back" routerLink="/auth/login">
+        <i class="pi pi-arrow-left" aria-hidden="true"></i>Назад ко входу
+      </a>
+
+      @if (sentTo(); as email) {
+        <div class="auth__success">
+          <i class="pi pi-send" aria-hidden="true"></i>
+          <h3>Запрос отправлен</h3>
+          <p>
+            Демонстрационный запрос для <strong>{{ email }}</strong> обработан. В реальном приложении
+            на почту пришла бы ссылка для сброса пароля.
+          </p>
+        </div>
+      } @else {
+        <h1 class="auth__title">Восстановление пароля</h1>
+        <p class="auth__subtitle">
+          Укажите email — мы имитируем отправку инструкции по восстановлению.
+        </p>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <div class="gt-field">
+            <label class="gt-field__label" for="recovery-email">Email</label>
+            <input
+              id="recovery-email"
+              type="email"
+              class="gt-input"
+              [class.gt-input--invalid]="emailError()"
+              formControlName="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+            />
+            @if (emailError(); as error) {
+              <span class="gt-field__error">{{ error }}</span>
+            }
+          </div>
+
+          <button type="submit" class="gt-btn gt-btn--primary gt-btn--block" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="gt-spinner" aria-hidden="true"></span>
+              Отправка…
+            } @else {
+              <i class="pi pi-send" aria-hidden="true"></i>
+              Отправить запрос
+            }
+          </button>
+        </form>
+
+        <p class="auth__hint">
+          Демонстрационный режим: письмо не отправляется, а запрос просто подтверждается на экране.
+        </p>
+      }
+    </div>
+  </section>
+</div>

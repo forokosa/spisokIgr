@@ -1,0 +1,160 @@
+@use './breakpoint' as bp;
+
+/* Общие стили страниц приложения. */
+.page {
+  display: flex;
+  flex-direction: column;
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.page__title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.page__subtitle {
+  color: var(--gt-text-muted);
+  margin-top: 4px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 30px 0 14px;
+}
+
+.section-head .section-title {
+  margin-bottom: 0;
+}
+
+.section-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gt-cyan);
+}
+
+.section-link:hover {
+  text-decoration: underline;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 18px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--gt-border);
+  background: rgba(11, 41, 68, 0.6);
+  color: var(--gt-text-muted);
+  font-size: 13.5px;
+  font-weight: 600;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.chip:hover {
+  color: var(--gt-text);
+  border-color: var(--gt-border-soft);
+}
+
+.chip.is-active {
+  background: linear-gradient(135deg, var(--gt-accent), #5b4cff);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(76, 69, 255, 0.3);
+}
+
+.search-field {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+  max-width: 420px;
+}
+
+.search-field i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gt-text-dim);
+}
+
+.search-field input {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px 0 42px;
+  border-radius: 999px;
+  border: 1px solid var(--gt-border);
+  background: rgba(7, 31, 53, 0.7);
+  color: var(--gt-text);
+  font-size: 14px;
+}
+
+.search-field input:focus {
+  outline: none;
+  border-color: var(--gt-accent);
+  box-shadow: 0 0 0 3px var(--gt-accent-soft);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px;
+  color: var(--gt-text-muted);
+}
+
+@include bp.mobile {
+  .page__title {
+    font-size: 22px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+  }
+}

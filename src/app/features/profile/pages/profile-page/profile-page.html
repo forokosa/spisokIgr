@@ -1,0 +1,132 @@
+<section class="page">
+  <header class="page__head">
+    <div>
+      <h1 class="page__title">Профиль</h1>
+      <p class="page__subtitle">Управляйте данными аккаунта и посмотрите свои предпочтения.</p>
+    </div>
+  </header>
+
+  <div class="profile-grid">
+    <section class="profile-card gt-card">
+      <div class="profile-card__head">
+        <div class="avatar">
+          <app-cover-image
+            [src]="editing() ? avatarPreview() : profile()?.avatarUrl"
+            [alt]="'Аватар ' + (profile()?.name ?? '')"
+          />
+        </div>
+        <div class="profile-card__ident">
+          <h2 class="profile-card__name">{{ profile()?.name ?? 'Гость' }}</h2>
+          <p class="profile-card__email">{{ profile()?.email ?? '' }}</p>
+          <p class="profile-card__since">В GameTrack с {{ joinedAt(profile()?.createdAt) }}</p>
+        </div>
+      </div>
+
+      @if (editing()) {
+        <form class="profile-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+          <div class="gt-field">
+            <label class="gt-field__label" for="profile-name">Имя</label>
+            <input
+              id="profile-name"
+              type="text"
+              class="gt-input"
+              [class.gt-input--invalid]="errorFor('name')"
+              formControlName="name"
+            />
+            @if (errorFor('name'); as error) {
+              <span class="gt-field__error">{{ error }}</span>
+            }
+          </div>
+
+          <div class="gt-field">
+            <label class="gt-field__label" for="profile-email">Email</label>
+            <input
+              id="profile-email"
+              type="email"
+              class="gt-input"
+              [class.gt-input--invalid]="errorFor('email')"
+              formControlName="email"
+            />
+            @if (errorFor('email'); as error) {
+              <span class="gt-field__error">{{ error }}</span>
+            }
+          </div>
+
+          <div class="gt-field">
+            <span class="gt-field__label">Аватар</span>
+            <input
+              type="file"
+              accept="image/*"
+              aria-label="Загрузить аватар"
+              (change)="onAvatarInput($event)"
+            />
+          </div>
+
+          <div class="profile-form__actions">
+            <button type="button" class="gt-btn gt-btn--ghost" [disabled]="busy()" (click)="cancelEdit()">
+              Отмена
+            </button>
+            <button type="submit" class="gt-btn gt-btn--primary" [disabled]="busy()">
+              @if (busy()) {
+                <span class="gt-spinner" aria-hidden="true"></span>Сохранение…
+              } @else {
+                <i class="pi pi-save" aria-hidden="true"></i>Сохранить
+              }
+            </button>
+          </div>
+        </form>
+      } @else {
+        <button type="button" class="gt-btn gt-btn--primary" (click)="startEdit()">
+          <i class="pi pi-pencil" aria-hidden="true"></i>Редактировать
+        </button>
+      }
+    </section>
+
+    <section class="panel gt-card">
+      <h2 class="section-title">Моя статистика</h2>
+      <ul class="mini-stats">
+        <li><span>Всего игр</span><strong>{{ stats().total }}</strong></li>
+        <li><span>Пройдено</span><strong>{{ stats().completed }}</strong></li>
+        <li><span>В процессе</span><strong>{{ stats().inProgress }}</strong></li>
+        <li><span>Хочу пройти</span><strong>{{ stats().wantToPlay }}</strong></li>
+        <li><span>Брошено</span><strong>{{ stats().dropped }}</strong></li>
+      </ul>
+    </section>
+
+    <section class="panel gt-card">
+      <h2 class="section-title">Любимые жанры</h2>
+      @if (topGenres().length > 0) {
+        <ul class="tags">
+          @for (genre of topGenres(); track genre.genre) {
+            <li class="tag-pill">
+              {{ genre.genre }}
+              <span>{{ genre.count }}</span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <app-empty-state
+          icon="pi pi-tag"
+          title="Недостаточно данных"
+          message="Добавьте игры, чтобы определить любимые жанры."
+        />
+      }
+    </section>
+
+    <section class="panel gt-card">
+      <h2 class="section-title">Любимая платформа</h2>
+      @if (favoritePlatform(); as platform) {
+        <div class="fav">
+          <i class="pi pi-desktop" aria-hidden="true"></i>
+          <span>{{ platform }}</span>
+        </div>
+      } @else {
+        <app-empty-state
+          icon="pi pi-desktop"
+          title="Пока не определена"
+          message="Добавьте игры на разных платформах, чтобы увидеть предпочтение."
+        />
+      }
+    </section>
+  </div>
+</section>

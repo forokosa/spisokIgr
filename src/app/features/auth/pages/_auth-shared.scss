@@ -1,0 +1,252 @@
+@use '../../../../styles/breakpoint' as bp;
+
+/* Общие стили гостевых экранов (вход, восстановление пароля). */
+.auth {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.auth__aside {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  background: #071f35;
+}
+
+.auth__scene {
+  position: absolute;
+  inset: 0;
+  background: url('/images/auth-scene.svg') center/cover no-repeat;
+  opacity: 0.95;
+}
+
+.auth__aside::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(4, 22, 41, 0.15) 30%, rgba(4, 22, 41, 0.92) 100%);
+}
+
+.auth__aside-content {
+  position: relative;
+  z-index: 1;
+  padding: 46px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+}
+
+.auth__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth__logo {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--gt-accent), #6b4cff);
+  color: #fff;
+  font-size: 20px;
+  box-shadow: 0 10px 24px rgba(76, 69, 255, 0.45);
+}
+
+.auth__brand-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+}
+
+.auth__pitch {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 460px;
+}
+
+.auth__pad {
+  font-size: 40px;
+  color: var(--gt-cyan);
+}
+
+.auth__pitch h2 {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.auth__pitch p {
+  color: #b9cbe3;
+}
+
+.auth__panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background: var(--gt-bg);
+}
+
+.auth__form-wrap {
+  width: min(420px, 100%);
+}
+
+.auth__title {
+  font-size: 30px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.auth__subtitle {
+  color: var(--gt-text-muted);
+  margin-bottom: 30px;
+}
+
+.auth__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  color: var(--gt-text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--gt-accent);
+  cursor: pointer;
+}
+
+.auth__link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gt-cyan);
+}
+
+.auth__link:hover {
+  text-decoration: underline;
+}
+
+.auth__hint {
+  margin-top: 22px;
+  padding: 12px 14px;
+  border: 1px dashed var(--gt-border);
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: var(--gt-text-muted);
+  background: rgba(11, 41, 68, 0.4);
+}
+
+.password {
+  position: relative;
+}
+
+.password .gt-input {
+  padding-right: 48px;
+}
+
+.password__toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--gt-text-muted);
+  font-size: 15px;
+}
+
+.password__toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--gt-text);
+}
+
+.auth__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  color: var(--gt-text-muted);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.auth__back:hover {
+  color: var(--gt-text);
+}
+
+.auth__success {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(61, 214, 140, 0.4);
+  background: rgba(61, 214, 140, 0.08);
+}
+
+.auth__success i {
+  font-size: 30px;
+  color: var(--gt-success);
+}
+
+.auth__success h3 {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.auth__success p {
+  color: var(--gt-text-muted);
+  font-size: 13.5px;
+}
+
+@media (max-width: 900px) {
+  .auth {
+    grid-template-columns: 1fr;
+  }
+
+  .auth__aside {
+    min-height: 220px;
+  }
+
+  .auth__aside-content {
+    padding: 26px;
+  }
+
+  .auth__pitch h2 {
+    font-size: 22px;
+  }
+}
+
+@include bp.mobile {
+  .auth__pitch {
+    display: none;
+  }
+
+  .auth__aside {
+    min-height: 170px;
+  }
+
+  .auth__panel {
+    padding: 28px 18px 40px;
+  }
+}

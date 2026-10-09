@@ -1,0 +1,116 @@
+@if (loading()) {
+  <div class="loading"><span class="gt-spinner" aria-hidden="true"></span>Загрузка игры…</div>
+} @else if (notFound() || !game()) {
+  <app-empty-state
+    icon="pi pi-search"
+    title="Игра не найдена"
+    message="Возможно, запись была удалена или ссылка неверна."
+  >
+    <a class="gt-btn gt-btn--primary" routerLink="/games">
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>Вернуться в библиотеку
+    </a>
+  </app-empty-state>
+} @else {
+  @let item = game()!;
+  <section class="page detail">
+    <a class="detail__back" routerLink="/games">
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>Назад к библиотеке
+    </a>
+
+    <div class="detail__grid">
+      <div class="detail__cover gt-card">
+        <app-cover-image [src]="item.coverUrl" [alt]="'Обложка ' + item.title" />
+      </div>
+
+      <div class="detail__info">
+        <div class="detail__heading">
+          <h1 class="detail__title">{{ item.title }}</h1>
+          @if (item.releaseYear) {
+            <span class="detail__year">{{ item.releaseYear }}</span>
+          }
+        </div>
+
+        <div class="detail__meta">
+          <app-status-pill [status]="item.status" />
+          @if (item.rating !== undefined && item.rating !== null) {
+            <span class="detail__rating">
+              <i class="pi pi-star-fill" aria-hidden="true"></i>{{ item.rating }} / 10
+            </span>
+          }
+        </div>
+
+        <div class="detail__tags">
+          <span class="tag"><i class="pi pi-tag" aria-hidden="true"></i>{{ item.genre }}</span>
+          <span class="tag"><i class="pi pi-desktop" aria-hidden="true"></i>{{ item.platform }}</span>
+          <span class="tag">
+            <i class="pi pi-calendar" aria-hidden="true"></i>Добавлено {{ formatAdded(item.addedAt) }}
+          </span>
+        </div>
+
+        @if (item.description) {
+          <p class="detail__description">{{ item.description }}</p>
+        }
+
+        <div class="detail__actions">
+          @if (item.status !== 'completed') {
+            <button
+              type="button"
+              class="gt-btn gt-btn--primary"
+              [disabled]="busy()"
+              (click)="markCompleted()"
+            >
+              <i class="pi pi-check" aria-hidden="true"></i>Отметить как пройденную
+            </button>
+          } @else {
+            <span class="detail__done"><i class="pi pi-check-circle" aria-hidden="true"></i>Игра пройдена</span>
+          }
+          <a class="gt-btn" [routerLink]="['/games', item.id, 'edit']">
+            <i class="pi pi-pencil" aria-hidden="true"></i>Редактировать
+          </a>
+          <button type="button" class="gt-btn" [disabled]="busy()" (click)="toggleWishlist()">
+            <i class="{{ item.status === 'want-to-play' ? 'pi pi-star-fill' : 'pi pi-star' }}" aria-hidden="true"></i>
+            {{ item.status === 'want-to-play' ? 'Убрать из желаемого' : 'В список желаемого' }}
+          </button>
+          <button type="button" class="gt-btn gt-btn--danger" (click)="requestDelete()">
+            <i class="pi pi-trash" aria-hidden="true"></i>Удалить
+          </button>
+        </div>
+
+        <div class="detail__status">
+          <label class="gt-field__label" for="detail-status">Изменить статус</label>
+          <select
+            id="detail-status"
+            class="gt-select"
+            [value]="item.status"
+            [disabled]="busy()"
+            (change)="onStatusChange($event)"
+          >
+            @for (status of statuses; track status) {
+              <option [value]="status">{{ statusLabel(status) }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+}
+
+<app-confirm-dialog
+  [visible]="confirmDelete()"
+  title="Удалить игру?"
+  [message]="'Игра «' + (game()?.title ?? '') + '» будет удалена из библиотеки. Это действие нельзя отменить.'"
+  confirmLabel="Удалить"
+  [busy]="busy()"
+  (confirmed)="onDeleteConfirmed()"
+  (cancelled)="cancelDelete()"
+/>
+
+<app-confirm-dialog
+  [visible]="confirmWishlistRemove()"
+  title="Убрать из списка желаемого?"
+  [message]="'Игра «' + (game()?.title ?? '') + '» будет удалена из вашего списка.'"
+  confirmLabel="Убрать"
+  [busy]="busy()"
+  (confirmed)="onWishlistRemoveConfirmed()"
+  (cancelled)="onWishlistRemoveCancelled()"
+/>

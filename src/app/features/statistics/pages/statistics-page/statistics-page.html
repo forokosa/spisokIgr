@@ -1,0 +1,102 @@
+<section class="page">
+  <header class="page__head">
+    <div>
+      <h1 class="page__title">Статистика</h1>
+      <p class="page__subtitle">Показатели вашей игровой коллекции обновляются автоматически.</p>
+    </div>
+  </header>
+
+  @if (stats().total === 0) {
+    <app-empty-state
+      icon="pi pi-chart-bar"
+      title="Пока нет данных"
+      message="Добавьте игры в библиотеку, чтобы увидеть статистику."
+    />
+  } @else {
+    <div class="stat-grid">
+      @for (card of cards(); track card.label) {
+        <article class="stat gt-card">
+          <span class="stat__icon" [style.background]="card.color + '22'" [style.color]="card.color">
+            <i class="{{ card.icon }}" aria-hidden="true"></i>
+          </span>
+          <div>
+            <span class="stat__value">{{ card.value }}</span>
+            <span class="stat__label">{{ card.label }}</span>
+          </div>
+        </article>
+      }
+    </div>
+
+    <div class="panels">
+      <section class="panel gt-card">
+        <h2 class="section-title">Соотношение статусов</h2>
+        <div class="stack" role="img" aria-label="Распределение игр по статусам">
+          @for (item of stats().byStatus; track item.status) {
+            @if (item.count > 0) {
+              <span
+                class="stack__part"
+                [style.width.%]="percent(item.count)"
+                [style.background]="statusMeta[item.status].color"
+                [title]="item.label + ': ' + item.count"
+              ></span>
+            }
+          }
+        </div>
+        <ul class="legend">
+          @for (item of stats().byStatus; track item.status) {
+            <li>
+              <span class="dot" [style.background]="statusMeta[item.status].color"></span>
+              {{ item.label }}
+              <strong>{{ item.count }}</strong>
+              <span class="legend__pct">{{ percent(item.count) }}%</span>
+            </li>
+          }
+        </ul>
+        <p class="percent-line">
+          Доля пройденных игр: <strong>{{ stats().completionRate }}%</strong>
+          @if (stats().averageRating !== null) {
+            · Средний рейтинг: <strong>{{ stats().averageRating }} / 10</strong>
+          }
+        </p>
+      </section>
+
+      <section class="panel gt-card">
+        <h2 class="section-title">По жанрам</h2>
+        <ul class="bars">
+          @for (item of stats().byGenre; track item.genre) {
+            <li>
+              <span class="bars__label">{{ item.genre }}</span>
+              <span class="bars__track">
+                <span
+                  class="bars__fill"
+                  [style.width.%]="width(item.count, maxGenre())"
+                  [style.background]="'linear-gradient(90deg, #4c45ff, #35c8ff)'"
+                ></span>
+              </span>
+              <span class="bars__count">{{ item.count }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section class="panel gt-card">
+        <h2 class="section-title">По платформам</h2>
+        <ul class="bars">
+          @for (item of stats().byPlatform; track item.platform) {
+            <li>
+              <span class="bars__label">{{ item.platform }}</span>
+              <span class="bars__track">
+                <span
+                  class="bars__fill"
+                  [style.width.%]="width(item.count, maxPlatform())"
+                  [style.background]="'linear-gradient(90deg, #9b7bff, #4c45ff)'"
+                ></span>
+              </span>
+              <span class="bars__count">{{ item.count }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+  }
+</section>

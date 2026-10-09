@@ -1,0 +1,67 @@
+@use '../../../../../styles/page';
+@use '../../../../../styles/breakpoint' as bp;
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.summary__card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+}
+
+.summary__icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.summary__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary__value {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.summary__label {
+  font-size: 13px;
+  color: var(--gt-text-muted);
+}
+
+@include bp.tablet-down {
+  .summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@include bp.mobile {
+  .summary {
+    gap: 12px;
+  }
+
+  .summary__card {
+    padding: 14px;
+  }
+
+  .summary__icon {
+    width: 40px;
+    height: 40px;
+    font-size: 17px;
+  }
+
+  .summary__value {
+    font-size: 22px;
+  }
+}

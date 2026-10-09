@@ -1,0 +1,107 @@
+@use '../../../../../styles/page';
+@use '../../../../../styles/breakpoint' as bp;
+
+.form__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--gt-text-muted);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.form__back:hover {
+  color: var(--gt-text);
+}
+
+.form {
+  padding: 24px;
+}
+
+.form__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 28px;
+}
+
+.form__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.form__cover {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dropzone {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border: 2px dashed var(--gt-border);
+  border-radius: 14px;
+  background: rgba(4, 22, 41, 0.5);
+  cursor: pointer;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.dropzone:hover,
+.dropzone--active {
+  border-color: var(--gt-accent);
+  background: rgba(76, 69, 255, 0.08);
+}
+
+.dropzone__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 20px;
+  color: var(--gt-text-muted);
+}
+
+.dropzone__empty i {
+  font-size: 34px;
+  color: var(--gt-accent);
+}
+
+.dropzone__empty span {
+  font-size: 13px;
+}
+
+.dropzone__empty small {
+  font-size: 11.5px;
+  color: var(--gt-text-dim);
+}
+
+.dropzone__preview {
+  position: absolute;
+  inset: 0;
+}
+
+.form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--gt-border);
+}
+
+@include bp.tablet-down {
+  .form__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form__cover {
+    max-width: 260px;
+  }
+}

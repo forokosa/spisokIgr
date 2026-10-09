@@ -1,0 +1,26 @@
+@use '../../../../../styles/page';
+@use '../../../../../styles/breakpoint' as bp;
+
+.wish {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wish__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.wish__actions .gt-btn {
+  flex: 1 1 auto;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+@include bp.mobile {
+  .wish__actions .gt-btn {
+    flex: 1 1 100%;
+  }
+}
