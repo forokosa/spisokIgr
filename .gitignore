@@ -2,14 +2,22 @@
 
 # Compiled output
 /dist
+/client/dist
 /tmp
 /out-tsc
 /bazel-out
 
 # Node
 /node_modules
+/client/node_modules
 npm-debug.log
 yarn-error.log
+
+# .NET build output
+**/bin/
+**/obj/
+*.user
+*.suo
 
 # IDEs and editors
 .idea/
@@ -21,15 +29,15 @@ yarn-error.log
 *.sublime-workspace
 
 # Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+.vscode/
 .history/*
+
+# Lab screenshots
+/скрины игра/
 
 # Miscellaneous
 /.angular/cache
+/client/.angular/cache
 .sass-cache/
 /connect.lock
 /coverage
@@ -37,6 +45,17 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
+
+# Secrets: never commit real credentials
+.env
+.env.*
+appsettings.Secrets.json
+appsettings.Local.json
+appsettings.Production.json
+**/appsettings.Secrets.json
+**/appsettings.Local.json
+**/appsettings.Production.json
+secrets.json
 
 # System files
 .DS_Store

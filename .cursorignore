@@ -1,0 +1,25 @@
+# Файлы, которые ИИ-агенты не должны читать или индексировать.
+
+# Секреты и локальные конфиги
+.env
+.env.*
+appsettings.Secrets.json
+appsettings.Local.json
+appsettings.Production.json
+**/appsettings.Secrets.json
+**/appsettings.Local.json
+**/appsettings.Production.json
+secrets.json
+
+# Сборка и зависимости
+node_modules/
+client/node_modules/
+client/dist/
+**/bin/
+**/obj/
+.angular/
+client/.angular/
+
+# Служебные файлы
+.git/
+*.user
