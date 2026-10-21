@@ -1,0 +1,24 @@
+# Файлы, исключённые из контекста ИИ-агентов.
+
+# Секреты: логины/пароли БД, ключи и локальные переопределения
+.env
+.env.*
+appsettings.Secrets.json
+appsettings.Local.json
+appsettings.Production.json
+**/appsettings.Secrets.json
+**/appsettings.Local.json
+**/appsettings.Production.json
+secrets.json
+
+# Артефакты сборки и зависимости
+node_modules/
+client/node_modules/
+client/dist/
+**/bin/
+**/obj/
+.angular/
+client/.angular/
+
+# Git-служебные данные
+.git/

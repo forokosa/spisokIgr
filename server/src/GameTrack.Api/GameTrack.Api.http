@@ -1,0 +1,98 @@
+@host = http://localhost:5080
+@gameId = 11111111-1111-4111-8111-111111111111
+
+### Список игр с пагинацией, поиском и фильтром по статусу
+GET {{host}}/api/games?page=1&pageSize=6&search=witcher&status=completed
+Accept: application/json
+
+### Одна игра по идентификатору
+GET {{host}}/api/games/{{gameId}}
+Accept: application/json
+
+### Создание игры
+POST {{host}}/api/games
+Content-Type: application/json
+
+{
+  "title": "Hades",
+  "genre": "Roguelike",
+  "platform": "PC",
+  "status": "in-progress",
+  "coverUrl": "images/placeholder.svg",
+  "description": "Экшен-рогалик от Supergiant Games.",
+  "rating": 9,
+  "releaseYear": 2020
+}
+
+### Полное обновление игры
+PUT {{host}}/api/games/{{gameId}}
+Content-Type: application/json
+
+{
+  "title": "The Witcher 3: Wild Hunt",
+  "genre": "RPG",
+  "platform": "PC",
+  "status": "completed",
+  "coverUrl": "images/covers/witcher-3.svg",
+  "description": "Обновлённое описание.",
+  "rating": 10,
+  "releaseYear": 2015
+}
+
+### Смена только статуса
+PATCH {{host}}/api/games/{{gameId}}/status
+Content-Type: application/json
+
+{
+  "status": "want-to-play"
+}
+
+### Удаление игры
+DELETE {{host}}/api/games/{{gameId}}
+
+### Статистика библиотеки
+GET {{host}}/api/statistics
+Accept: application/json
+
+### Профиль
+GET {{host}}/api/profile
+Accept: application/json
+
+### Обновление профиля
+PUT {{host}}/api/profile
+Content-Type: application/json
+
+{
+  "name": "Демо Игрок",
+  "email": "demo@gametrack.app",
+  "avatarUrl": "images/avatar.svg"
+}
+
+### Вход
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "demo@gametrack.app",
+  "password": "demo1234",
+  "remember": true
+}
+
+### Регистрация нового аккаунта
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Новый Игрок",
+  "email": "player@gametrack.app",
+  "password": "password123",
+  "remember": true
+}
+
+### Восстановление пароля
+POST {{host}}/api/auth/recovery
+Content-Type: application/json
+
+{
+  "email": "demo@gametrack.app"
+}

@@ -1,0 +1,96 @@
+<div class="auth">
+  <aside class="auth__aside">
+    <div class="auth__scene" aria-hidden="true"></div>
+    <div class="auth__aside-content">
+      <div class="auth__brand">
+        <span class="auth__logo"><i class="pi pi-desktop" aria-hidden="true"></i></span>
+        <span class="auth__brand-name">GameTrack</span>
+      </div>
+      <div class="auth__pitch">
+        <i class="pi pi-play-circle auth__pad" aria-hidden="true"></i>
+        <h2>Отслеживайте свою игровую коллекцию</h2>
+        <p>Библиотека, список желаемого и статистика в одном месте.</p>
+      </div>
+    </div>
+  </aside>
+
+  <section class="auth__panel">
+    <div class="auth__form-wrap">
+      <h1 class="auth__title">Вход</h1>
+      <p class="auth__subtitle">Добро пожаловать в GameTrack</p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="gt-field">
+          <label class="gt-field__label" for="login-email">Email</label>
+          <input
+            id="login-email"
+            type="email"
+            class="gt-input"
+            [class.gt-input--invalid]="emailError()"
+            formControlName="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+          />
+          @if (emailError(); as error) {
+            <span class="gt-field__error">{{ error }}</span>
+          }
+        </div>
+
+        <div class="gt-field">
+          <label class="gt-field__label" for="login-password">Пароль</label>
+          <div class="password">
+            <input
+              id="login-password"
+              [type]="showPassword() ? 'text' : 'password'"
+              class="gt-input"
+              [class.gt-input--invalid]="passwordError()"
+              formControlName="password"
+              autocomplete="current-password"
+              placeholder="Введите пароль"
+            />
+            <button
+              type="button"
+              class="password__toggle"
+              [attr.aria-label]="showPassword() ? 'Скрыть пароль' : 'Показать пароль'"
+              [attr.aria-pressed]="showPassword()"
+              (click)="togglePassword()"
+            >
+              <i class="{{ showPassword() ? 'pi pi-eye-slash' : 'pi pi-eye' }}" aria-hidden="true"></i>
+            </button>
+          </div>
+          @if (passwordError(); as error) {
+            <span class="gt-field__error">{{ error }}</span>
+          }
+        </div>
+
+        <div class="auth__row">
+          <label class="checkbox">
+            <input type="checkbox" formControlName="remember" />
+            <span>Запомнить меня</span>
+          </label>
+          <a class="auth__link" routerLink="/auth/recovery">Забыли пароль?</a>
+        </div>
+
+        <button type="submit" class="gt-btn gt-btn--primary gt-btn--block" [disabled]="submitting()">
+          @if (submitting()) {
+            <span class="gt-spinner" aria-hidden="true"></span>
+            Проверка…
+          } @else {
+            <i class="pi pi-sign-in" aria-hidden="true"></i>
+            Войти
+          }
+        </button>
+      </form>
+
+      <p class="auth__switch">
+        Нет аккаунта?
+        <a class="auth__link" routerLink="/auth/register">Зарегистрироваться</a>
+      </p>
+
+      <p class="auth__hint">
+        Демо-доступ: <strong>demo@gametrack.app</strong> / <strong>demo1234</strong>.
+        Можно также создать собственный аккаунт.
+      </p>
+    </div>
+  </section>
+</div>
