@@ -5,9 +5,16 @@ using GameTrack.Domain.Repositories;
 
 namespace GameTrack.Domain.Services;
 
-/// <summary>Доменный сервис регистрации, аутентификации и восстановления доступа.</summary>
+/// <summary>
+/// Доменный сервис регистрации, аутентификации и восстановления доступа.
+/// Пользователь здесь ещё не определён, поэтому <see cref="IUserContextProvider"/>
+/// не используется: операции выполняются над самим аккаунтом.
+/// </summary>
 public sealed class AuthService
 {
+    /// <summary>Аватар по умолчанию для новых профилей.</summary>
+    private const string DefaultAvatarUrl = "images/avatar.svg";
+
     private readonly IUserProfileRepository _profiles;
     private readonly IAccountRepository _accounts;
 
@@ -36,7 +43,7 @@ public sealed class AuthService
         }
 
         var account = await _accounts.RegisterAsync(name, email, password, cancellationToken);
-        var profile = await GetOrCreateProfileAsync(account, cancellationToken);
+        await CreateProfileAsync(account, cancellationToken);
 
         return new AuthSession(
             account.Id,
@@ -72,8 +79,6 @@ public sealed class AuthService
             throw new UnauthorizedException("Неверный email или пароль.");
         }
 
-        var profile = await GetOrCreateProfileAsync(account, cancellationToken);
-
         return new AuthSession(
             account.Id,
             account.Email,
@@ -95,23 +100,23 @@ public sealed class AuthService
     }
 
     /// <summary>
-    /// Возвращает профиль активного пользователя. В демонстрационном приложении
-    /// профиль один, поэтому при входе под другим аккаунтом его данные обновляются.
+    /// Создаёт профиль зарегистрированного пользователя. Профиль в БД отдельный
+    /// для каждого аккаунта, поэтому вход другого пользователя больше не
+    /// перезаписывает чужие данные (раньше профиль был один на всё приложение).
     /// </summary>
-    private async Task<UserProfile> GetOrCreateProfileAsync(
+    private async Task CreateProfileAsync(
         UserAccount account,
         CancellationToken cancellationToken)
     {
-        var profile = await _profiles.GetAsync(cancellationToken)
-                      ?? throw new NotFoundException("Профиль пользователя не найден.");
+        var now = DateTimeOffset.UtcNow;
+        var profile = UserProfile.Restore(
+            account.Id,
+            account.Name,
+            account.Email,
+            DefaultAvatarUrl,
+            now,
+            now);
 
-        if (!string.Equals(profile.Email, account.Email, StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(profile.Name, account.Name, StringComparison.Ordinal))
-        {
-            profile.Update(new ProfileDraft(account.Name, account.Email, profile.AvatarUrl));
-            profile = await _profiles.UpdateAsync(profile, cancellationToken);
-        }
-
-        return profile;
+        await _profiles.CreateAsync(profile, cancellationToken);
     }
 }

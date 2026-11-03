@@ -11,8 +11,15 @@ public sealed record AuthSession(
 /// <summary>Результат запроса восстановления пароля.</summary>
 public sealed record RecoveryResult(string Email, bool Delivered, string Code);
 
-/// <summary>Зарегистрированный аккаунт без секретных данных.</summary>
-public sealed record UserAccount(Guid Id, string Name, string Email);
+/// <summary>
+/// Зарегистрированный аккаунт без секретных данных.
+/// <paramref name="Login"/> — технический логин (уникальный ключ в БД),
+/// в API не отдаётся: клиент по-прежнему входит по email.
+/// </summary>
+public sealed record UserAccount(Guid Id, string Name, string Email, string Login = "")
+{
+    public string Login { get; init; } = string.IsNullOrWhiteSpace(Login) ? Email : Login;
+}
 
 /// <summary>Данные для создания нового аккаунта.</summary>
 public sealed record RegisterDraft(

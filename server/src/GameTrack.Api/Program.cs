@@ -1,15 +1,14 @@
 using GameTrack.Api.Identity;
 using GameTrack.Api.Middleware;
 using GameTrack.Domain.Models;
-using GameTrack.Domain.Repositories;
 using GameTrack.Domain.Services;
-using GameTrack.Infrastructure.Persistence;
-using GameTrack.Infrastructure.Security;
+using GameTrack.Infrastructure;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Локальные секреты и UserSecrets подключаются вне репозитория.
+// Строка подключения к PostgreSQL берётся отсюда (ConnectionStrings:GameTrack).
 builder.Configuration
     .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
     .AddJsonFile("appsettings.Secrets.json", optional: true, reloadOnChange: true)
@@ -24,7 +23,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "GameTrack API",
         Version = "v1",
-        Description = "REST API библиотеки игр: DDD, асинхронные операции, пагинация и валидация."
+        Description = "REST API библиотеки игр: DDD, PostgreSQL (SQL + EF Core), асинхронность и пагинация."
     });
 
     var xmlPath = Path.Combine(AppContext.BaseDirectory, "GameTrack.Api.xml");
@@ -63,27 +62,13 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Infrastructure: единые in-memory репозитории на всё время жизни приложения.
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
-builder.Services.AddSingleton(new InMemoryUserGameRepositoryProvider(SeedData.ProfileId));
-builder.Services.AddScoped<IGameRepository>(serviceProvider =>
-{
-    var currentUser = serviceProvider.GetRequiredService<ICurrentUser>();
-    var provider = serviceProvider.GetRequiredService<InMemoryUserGameRepositoryProvider>();
-    return provider.GetRepository(currentUser.UserId);
-});
-builder.Services.AddSingleton<IUserProfileRepository, InMemoryUserProfileRepository>();
+// Infrastructure: NpgsqlDataSource + DbContext + репозитории (SQL и EF Core).
+// Domain про EF и Npgsql не знает — зависимость внедряется здесь.
+builder.Services.AddPersistence(builder.Configuration);
 
-var demoEmail = builder.Configuration["DemoAuth:Email"];
-var demoPassword = builder.Configuration["DemoAuth:Password"];
-IAccountRepository accounts = !string.IsNullOrWhiteSpace(demoEmail) && !string.IsNullOrWhiteSpace(demoPassword)
-    ? new InMemoryAccountRepository(
-        demoEmail,
-        demoPassword,
-        id: SeedData.ProfileId)
-    : new InMemoryAccountRepository();
-builder.Services.AddSingleton(accounts);
+// Текущий пользователь: Guid из X-User-Id -> логин аккаунта (middleware).
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContextProvider, HttpCurrentUser>();
 
 // Domain-сервисы.
 builder.Services.AddScoped<GameService>();
@@ -96,6 +81,7 @@ var app = builder.Build();
 app.UseExceptionHandling();
 app.UseRequestLogging();
 app.UseCors("Frontend");
+app.UseCurrentUser();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {

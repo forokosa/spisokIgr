@@ -1,15 +1,18 @@
 using GameTrack.Domain.Entities;
 using GameTrack.Domain.Enums;
 
-namespace GameTrack.Infrastructure.Persistence;
+namespace GameTrack.Tests.Fakes;
 
 /// <summary>
-/// Начальные данные демонстрационной библиотеки.
-/// Перенесены из моков фронтенда, чтобы приложение стартовало с наполненным списком.
+/// Общие данные для тестов: демонстрационный профиль и семь игр.
+/// Раньше этот класс лежал в Infrastructure (рабочий seed), теперь он
+/// нужен только тестам: боевые данные создаются скриптами db/*.sql.
 /// </summary>
-public static class SeedData
+public static class TestSeed
 {
     public static readonly Guid ProfileId = Guid.Parse("2f7a1c1e-6d40-4fbc-9d1f-3f2f7a9b6e10");
+
+    public static readonly string Login = "demo";
 
     private static readonly DateTimeOffset ProfileCreatedAt =
         new(2024, 1, 1, 9, 0, 0, TimeSpan.Zero);
