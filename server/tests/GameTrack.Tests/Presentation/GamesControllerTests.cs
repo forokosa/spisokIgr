@@ -1,9 +1,8 @@
 using GameTrack.Api.Contracts;
 using GameTrack.Api.Controllers;
-using GameTrack.Domain.Enums;
 using GameTrack.Domain.Models;
 using GameTrack.Domain.Services;
-using GameTrack.Infrastructure.Persistence;
+using GameTrack.Tests.Fakes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +13,9 @@ public sealed class GamesControllerTests
     private static GamesController CreateController()
     {
         var options = new PaginationOptions { DefaultPageSize = 6, MaxPageSize = 100 };
-        var service = new GameService(new InMemoryGameRepository(), options);
+        var user = new FakeUserContextProvider(TestSeed.ProfileId, TestSeed.Login);
+        var repository = new FakeGameRepository(TestSeed.ProfileId, TestSeed.CreateGames());
+        var service = new GameService(repository, user, options);
         return new GamesController(service, options);
     }
 
@@ -27,6 +28,12 @@ public sealed class GamesControllerTests
         Rating = 8m,
         ReleaseYear = 2020
     };
+
+    private static async Task<Guid> AnyGameIdAsync(GamesController controller)
+    {
+        var page = await controller.GetGames(page: 1, pageSize: 1);
+        return ((PagedResponse<GameResponse>)((OkObjectResult)page.Result!).Value!).Items[0].Id;
+    }
 
     [Fact]
     public async Task GetGames_WithValidQuery_ReturnsOkWithPagedData()
@@ -93,8 +100,7 @@ public sealed class GamesControllerTests
     public async Task GetGameById_WithExistingId_ReturnsOk()
     {
         var controller = CreateController();
-        var page = await controller.GetGames(page: 1, pageSize: 1);
-        var id = ((PagedResponse<GameResponse>)((OkObjectResult)page.Result!).Value!).Items[0].Id;
+        var id = await AnyGameIdAsync(controller);
 
         var result = await controller.GetGameById(id.ToString());
 
@@ -195,8 +201,7 @@ public sealed class GamesControllerTests
     public async Task UpdateGame_WithValidRequest_ReturnsOk()
     {
         var controller = CreateController();
-        var page = await controller.GetGames(page: 1, pageSize: 1);
-        var id = ((PagedResponse<GameResponse>)((OkObjectResult)page.Result!).Value!).Items[0].Id;
+        var id = await AnyGameIdAsync(controller);
 
         var result = await controller.UpdateGame(id.ToString(), ValidRequest("Updated Controller Game"));
 
@@ -229,8 +234,7 @@ public sealed class GamesControllerTests
     public async Task ChangeStatus_WithValidData_ReturnsOk()
     {
         var controller = CreateController();
-        var page = await controller.GetGames(page: 1, pageSize: 1);
-        var id = ((PagedResponse<GameResponse>)((OkObjectResult)page.Result!).Value!).Items[0].Id;
+        var id = await AnyGameIdAsync(controller);
 
         var result = await controller.ChangeStatus(
             id.ToString(),
@@ -245,8 +249,7 @@ public sealed class GamesControllerTests
     public async Task ChangeStatus_WithInvalidStatus_ReturnsBadRequest()
     {
         var controller = CreateController();
-        var page = await controller.GetGames(page: 1, pageSize: 1);
-        var id = ((PagedResponse<GameResponse>)((OkObjectResult)page.Result!).Value!).Items[0].Id;
+        var id = await AnyGameIdAsync(controller);
 
         var result = await controller.ChangeStatus(
             id.ToString(),
@@ -271,8 +274,7 @@ public sealed class GamesControllerTests
     public async Task DeleteGame_WithExistingId_ReturnsNoContent()
     {
         var controller = CreateController();
-        var page = await controller.GetGames(page: 1, pageSize: 1);
-        var id = ((PagedResponse<GameResponse>)((OkObjectResult)page.Result!).Value!).Items[0].Id;
+        var id = await AnyGameIdAsync(controller);
 
         var result = await controller.DeleteGame(id.ToString());
 
@@ -303,7 +305,9 @@ public sealed class GamesControllerTests
     public async Task Constructor_WithNullDependencies_ThrowsArgumentNullException()
     {
         var options = new PaginationOptions();
-        var service = new GameService(new InMemoryGameRepository(), options);
+        var user = new FakeUserContextProvider(TestSeed.ProfileId, TestSeed.Login);
+        var repository = new FakeGameRepository(TestSeed.ProfileId, TestSeed.CreateGames());
+        var service = new GameService(repository, user, options);
 
         await Assert.ThrowsAsync<ArgumentNullException>(
             () => Task.FromResult(new GamesController(null!, options)));

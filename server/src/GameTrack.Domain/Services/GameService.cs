@@ -9,17 +9,24 @@ namespace GameTrack.Domain.Services;
 /// <summary>
 /// Доменный сервис библиотеки игр. Здесь находится вся бизнес-логика:
 /// валидация пагинации, проверка уникальности названия и работа с агрегатом <see cref="Game"/>.
+/// Каждая операция выполняется от имени <see cref="UserContext"/>,
+/// поэтому чужая игра недоступна даже при знании её идентификатора.
 /// </summary>
 public sealed class GameService
 {
     private const int MaxSearchLength = 100;
 
     private readonly IGameRepository _repository;
+    private readonly IUserContextProvider _users;
     private readonly PaginationOptions _pagination;
 
-    public GameService(IGameRepository repository, PaginationOptions pagination)
+    public GameService(
+        IGameRepository repository,
+        IUserContextProvider users,
+        PaginationOptions pagination)
     {
         _repository = Guard.NotNull(repository, nameof(repository));
+        _users = Guard.NotNull(users, nameof(users));
         _pagination = Guard.NotNull(pagination, nameof(pagination));
         _pagination.EnsureValid();
     }
@@ -44,14 +51,19 @@ public sealed class GameService
         }
 
         var filter = new GameFilter(normalizedSearch, parsedStatus);
-        return await _repository.GetPagedAsync(filter, page, size, cancellationToken);
+        return await _repository.GetPagedAsync(
+            _users.GetRequiredUser(),
+            filter,
+            page,
+            size,
+            cancellationToken);
     }
 
     /// <summary>Возвращает игру по идентификатору.</summary>
     public async Task<Game> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         Guard.Id(id, nameof(id));
-        return await _repository.GetByIdAsync(id, cancellationToken)
+        return await _repository.GetByIdAsync(_users.GetRequiredUser(), id, cancellationToken)
                ?? throw new NotFoundException("Игра не найдена.");
     }
 
@@ -59,10 +71,12 @@ public sealed class GameService
     public async Task<Game> CreateAsync(GameDraft draft, CancellationToken cancellationToken = default)
     {
         Guard.NotNull(draft, nameof(draft));
-        await EnsureTitleIsUniqueAsync(draft.Title, null, cancellationToken);
+
+        var user = _users.GetRequiredUser();
+        await EnsureTitleIsUniqueAsync(user, draft.Title, null, cancellationToken);
 
         var game = Game.Create(draft);
-        return await _repository.AddAsync(game, cancellationToken);
+        return await _repository.AddAsync(user, game, cancellationToken);
     }
 
     /// <summary>Полностью обновляет игру.</summary>
@@ -74,11 +88,12 @@ public sealed class GameService
         Guard.Id(id, nameof(id));
         Guard.NotNull(draft, nameof(draft));
 
+        var user = _users.GetRequiredUser();
         var game = await GetByIdAsync(id, cancellationToken);
-        await EnsureTitleIsUniqueAsync(draft.Title, id, cancellationToken);
+        await EnsureTitleIsUniqueAsync(user, draft.Title, id, cancellationToken);
         game.Update(draft);
 
-        return await _repository.UpdateAsync(game, cancellationToken);
+        return await _repository.UpdateAsync(user, game, cancellationToken);
     }
 
     /// <summary>Меняет статус игры (частичное обновление).</summary>
@@ -92,17 +107,19 @@ public sealed class GameService
         var game = await GetByIdAsync(id, cancellationToken);
         game.ChangeStatus(parsed);
 
-        return await _repository.UpdateAsync(game, cancellationToken);
+        return await _repository.UpdateAsync(_users.GetRequiredUser(), game, cancellationToken);
     }
 
     /// <summary>Удаляет игру из библиотеки.</summary>
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         Guard.Id(id, nameof(id));
-        _ = await _repository.GetByIdAsync(id, cancellationToken)
+
+        var user = _users.GetRequiredUser();
+        _ = await _repository.GetByIdAsync(user, id, cancellationToken)
             ?? throw new NotFoundException("Игра не найдена.");
 
-        var deleted = await _repository.DeleteAsync(id, cancellationToken);
+        var deleted = await _repository.DeleteAsync(user, id, cancellationToken);
         if (!deleted)
         {
             throw new NotFoundException("Игра не найдена.");
@@ -110,12 +127,13 @@ public sealed class GameService
     }
 
     private async Task EnsureTitleIsUniqueAsync(
+        UserContext user,
         string? title,
         Guid? excludeId,
         CancellationToken cancellationToken)
     {
         var normalized = Guard.NotBlank(title, nameof(title), 2, 200);
-        var exists = await _repository.ExistsByTitleAsync(normalized, excludeId, cancellationToken);
+        var exists = await _repository.ExistsByTitleAsync(user, normalized, excludeId, cancellationToken);
         if (exists)
         {
             throw new ConflictException("Игра с таким названием уже есть в библиотеке.");

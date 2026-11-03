@@ -4,34 +4,38 @@ using GameTrack.Domain.Enums;
 using GameTrack.Domain.Models;
 using GameTrack.Domain.Repositories;
 
-namespace GameTrack.Infrastructure.Persistence;
+namespace GameTrack.Tests.Fakes;
 
 /// <summary>
-/// In-memory заглушка репозитория игр. Вся работа с "хранилищем" инкапсулирована здесь.
-/// Методы намеренно асинхронные: при переходе на реальную БД сигнатуры не изменятся.
+/// In-memory реализация библиотеки игр для быстрых unit-тестов домена,
+/// контроллеров и сервисов. В рабочем коде её больше нет — источником
+/// данных служит PostgreSQL.
+///
+/// Изоляция по пользователю здесь та же, что и у EF-репозитория: у каждого
+/// <see cref="UserContext.UserId"/> своя коллекция игр.
 /// </summary>
-public sealed class InMemoryGameRepository : IGameRepository
+public sealed class FakeGameRepository : IGameRepository
 {
     private readonly object _sync = new();
-    private readonly List<Game> _games;
+    private readonly Dictionary<Guid, List<Game>> _games = [];
 
-    public InMemoryGameRepository() : this(SeedData.CreateGames())
+    public FakeGameRepository()
     {
     }
 
-    public InMemoryGameRepository(IReadOnlyList<Game> seed)
+    public FakeGameRepository(Guid userId, IReadOnlyList<Game> seed)
     {
-        _games = Guard.NotNull(seed, nameof(seed))
-            .Select(Clone)
-            .ToList();
+        _games[userId] = seed.Select(Clone).ToList();
     }
 
     public async Task<PagedResult<Game>> GetPagedAsync(
+        UserContext user,
         GameFilter filter,
         int page,
         int pageSize,
         CancellationToken cancellationToken = default)
     {
+        Guard.NotNull(user, nameof(user));
         Guard.NotNull(filter, nameof(filter));
         Guard.Page(page);
         Guard.PageSize(pageSize, int.MaxValue);
@@ -40,7 +44,7 @@ public sealed class InMemoryGameRepository : IGameRepository
 
         lock (_sync)
         {
-            var query = ApplyFilter(_games, filter)
+            var query = ApplyFilter(Owned(user), filter)
                 .OrderByDescending(game => game.UpdatedAt)
                 .ThenBy(game => game.Title, StringComparer.OrdinalIgnoreCase)
                 .ToList();
@@ -55,101 +59,129 @@ public sealed class InMemoryGameRepository : IGameRepository
         }
     }
 
-    public async Task<IReadOnlyList<Game>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Game>> GetAllAsync(
+        UserContext user,
+        CancellationToken cancellationToken = default)
     {
+        Guard.NotNull(user, nameof(user));
         await Task.CompletedTask;
         cancellationToken.ThrowIfCancellationRequested();
 
         lock (_sync)
         {
-            return _games
+            return Owned(user)
                 .OrderByDescending(game => game.UpdatedAt)
                 .Select(Clone)
                 .ToList();
         }
     }
 
-    public async Task<Game?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Game?> GetByIdAsync(
+        UserContext user,
+        Guid id,
+        CancellationToken cancellationToken = default)
     {
+        Guard.NotNull(user, nameof(user));
         Guard.Id(id, nameof(id));
         await Task.CompletedTask;
         cancellationToken.ThrowIfCancellationRequested();
 
         lock (_sync)
         {
-            var game = _games.FirstOrDefault(item => item.Id == id);
+            var game = Owned(user).FirstOrDefault(item => item.Id == id);
             return game is null ? null : Clone(game);
         }
     }
 
-    public async Task<Game> AddAsync(Game game, CancellationToken cancellationToken = default)
+    public async Task<Game> AddAsync(
+        UserContext user,
+        Game game,
+        CancellationToken cancellationToken = default)
     {
+        Guard.NotNull(user, nameof(user));
         Guard.NotNull(game, nameof(game));
         await Task.CompletedTask;
         cancellationToken.ThrowIfCancellationRequested();
 
         lock (_sync)
         {
-            if (_games.Any(item => item.Id == game.Id))
+            var games = Owned(user).ToList();
+
+            if (games.Any(item => item.Id == game.Id))
             {
                 throw new ConflictException("Игра с таким идентификатором уже существует.");
             }
 
-            if (_games.Any(item => string.Equals(item.Title, game.Title, StringComparison.OrdinalIgnoreCase)))
+            if (games.Any(item => string.Equals(item.Title, game.Title, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ConflictException("Игра с таким названием уже есть в библиотеке.");
             }
 
-            var stored = Clone(game);
-            _games.Add(stored);
-            return Clone(stored);
+            games.Add(Clone(game));
+            _games[user.UserId] = games;
+            return Clone(game);
         }
     }
 
-    public async Task<Game> UpdateAsync(Game game, CancellationToken cancellationToken = default)
+    public async Task<Game> UpdateAsync(
+        UserContext user,
+        Game game,
+        CancellationToken cancellationToken = default)
     {
+        Guard.NotNull(user, nameof(user));
         Guard.NotNull(game, nameof(game));
         await Task.CompletedTask;
         cancellationToken.ThrowIfCancellationRequested();
 
         lock (_sync)
         {
-            var index = _games.FindIndex(item => item.Id == game.Id);
+            var games = Owned(user).ToList();
+            var index = games.FindIndex(item => item.Id == game.Id);
             if (index < 0)
             {
                 throw new NotFoundException("Игра не найдена.");
             }
 
-            if (_games.Any(item =>
+            if (games.Any(item =>
                     item.Id != game.Id
                     && string.Equals(item.Title, game.Title, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ConflictException("Игра с таким названием уже есть в библиотеке.");
             }
 
-            var stored = Clone(game);
-            _games[index] = stored;
-            return Clone(stored);
+            games[index] = Clone(game);
+            _games[user.UserId] = games;
+            return Clone(game);
         }
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(
+        UserContext user,
+        Guid id,
+        CancellationToken cancellationToken = default)
     {
+        Guard.NotNull(user, nameof(user));
         Guard.Id(id, nameof(id));
         await Task.CompletedTask;
         cancellationToken.ThrowIfCancellationRequested();
 
         lock (_sync)
         {
-            return _games.RemoveAll(item => item.Id == id) > 0;
+            var games = Owned(user).ToList();
+            var removed = games.RemoveAll(item => item.Id == id);
+            _games[user.UserId] = games;
+            return removed > 0;
         }
     }
 
     public async Task<bool> ExistsByTitleAsync(
+        UserContext user,
         string title,
         Guid? excludeId = null,
         CancellationToken cancellationToken = default)
     {
+        Guard.NotNull(user, nameof(user));
+
         var normalized = Guard.NotBlank(title, nameof(title), 2, 200);
         if (excludeId == Guid.Empty)
         {
@@ -161,19 +193,22 @@ public sealed class InMemoryGameRepository : IGameRepository
 
         lock (_sync)
         {
-            return _games.Any(game =>
+            return Owned(user).Any(game =>
                 game.Id != excludeId
                 && string.Equals(game.Title, normalized, StringComparison.OrdinalIgnoreCase));
         }
     }
 
+    private IReadOnlyList<Game> Owned(UserContext user)
+        => _games.TryGetValue(user.UserId, out var games) ? games : [];
+
     private static IEnumerable<Game> ApplyFilter(IEnumerable<Game> games, GameFilter filter)
     {
         var query = games;
 
-        if (filter.Status is not null)
+        if (filter.Status is { } status)
         {
-            query = query.Where(game => game.Status == filter.Status);
+            query = query.Where(game => game.Status == status);
         }
 
         var search = filter.Search?.Trim();
@@ -188,7 +223,7 @@ public sealed class InMemoryGameRepository : IGameRepository
         return query;
     }
 
-    private static Game Clone(Game game) => Game.Restore(
+    internal static Game Clone(Game game) => Game.Restore(
         game.Id,
         game.Title,
         game.Genre,

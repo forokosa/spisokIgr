@@ -1,7 +1,7 @@
 using GameTrack.Api.Contracts;
 using GameTrack.Api.Controllers;
 using GameTrack.Domain.Services;
-using GameTrack.Infrastructure.Persistence;
+using GameTrack.Tests.Fakes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +11,9 @@ public sealed class ProfileControllerTests
 {
     private static ProfileController CreateController()
     {
-        var service = new ProfileService(new InMemoryUserProfileRepository());
+        var service = new ProfileService(
+            new FakeUserProfileRepository(TestSeed.ProfileId, TestSeed.CreateProfile()),
+            new FakeUserContextProvider(TestSeed.ProfileId, TestSeed.Login));
         return new ProfileController(service);
     }
 

@@ -1,24 +1,27 @@
 using GameTrack.Domain.Common;
 using GameTrack.Domain.Models;
 using GameTrack.Domain.Services;
-using GameTrack.Infrastructure.Persistence;
-using GameTrack.Infrastructure.Security;
+using GameTrack.Tests.Fakes;
 
 namespace GameTrack.Tests.Domain;
 
 public sealed class AuthServiceTests
 {
     private static AuthService CreateService(
-        out InMemoryUserProfileRepository profiles,
-        out InMemoryAccountRepository accounts)
+        out FakeUserProfileRepository profiles,
+        out FakeAccountRepository accounts)
     {
-        profiles = new InMemoryUserProfileRepository();
-        accounts = new InMemoryAccountRepository(
+        profiles = new FakeUserProfileRepository();
+        accounts = new FakeAccountRepository(
             "demo@gametrack.app",
             "demo1234",
-            id: SeedData.ProfileId);
+            id: AccountIdMapForDemo());
+
         return new AuthService(profiles, accounts);
     }
+
+    private static Guid AccountIdMapForDemo()
+        => GameTrack.Infrastructure.Persistence.AccountIdMap.DemoUserId;
 
     private static RegisterDraft Draft(
         string name = "Новый Игрок",
@@ -31,18 +34,14 @@ public sealed class AuthServiceTests
     public async Task Constructor_WithNullProfiles_ThrowsArgumentNullException()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(
-            () => Task.FromResult(new AuthService(
-                null!,
-                new InMemoryAccountRepository())));
+            () => Task.FromResult(new AuthService(null!, new FakeAccountRepository())));
     }
 
     [Fact]
     public async Task Constructor_WithNullAccounts_ThrowsArgumentNullException()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(
-            () => Task.FromResult(new AuthService(
-                new InMemoryUserProfileRepository(),
-                null!)));
+            () => Task.FromResult(new AuthService(new FakeUserProfileRepository(), null!)));
     }
 
     [Fact]
@@ -56,8 +55,11 @@ public sealed class AuthServiceTests
         Assert.Equal("Новый Игрок", session.Name);
         Assert.True(session.Remember);
         Assert.NotEqual(Guid.Empty, session.UserId);
-        Assert.NotEqual(SeedData.ProfileId, session.UserId);
-        Assert.Equal("new@gametrack.app", (await profiles.GetAsync())!.Email);
+
+        var profile = await profiles.GetAsync(new GameTrack.Domain.Repositories.UserContext(session.UserId, "new"));
+        Assert.NotNull(profile);
+        Assert.Equal("new@gametrack.app", profile!.Email);
+        Assert.Equal("Новый Игрок", profile.Name);
     }
 
     [Fact]
@@ -111,17 +113,19 @@ public sealed class AuthServiceTests
     }
 
     [Fact]
-    public async Task LoginAsync_WithDemoAccount_RestoresDemoProfile()
+    public async Task LoginAsync_DoesNotOverwriteOtherProfiles()
     {
         var service = CreateService(out var profiles, out _);
-        await service.RegisterAsync(Draft());
-        Assert.Equal("Новый Игрок", (await profiles.GetAsync())!.Name);
 
-        var session = await service.LoginAsync("demo@gametrack.app", "demo1234", true);
+        var registered = await service.RegisterAsync(Draft());
+        var demoSession = await service.LoginAsync("demo@gametrack.app", "demo1234", true);
 
-        Assert.Equal("Алексей Игрок", session.Name);
-        Assert.Equal(SeedData.ProfileId, session.UserId);
-        Assert.Equal("Алексей Игрок", (await profiles.GetAsync())!.Name);
+        // Раньше вход демо-пользователя перезаписывал единственный профиль.
+        var registeredProfile = await profiles.GetAsync(
+            new GameTrack.Domain.Repositories.UserContext(registered.UserId, "new"));
+        Assert.NotNull(registeredProfile);
+        Assert.Equal("Новый Игрок", registeredProfile!.Name);
+        Assert.NotEqual(demoSession.UserId, registered.UserId);
     }
 
     [Fact]

@@ -8,15 +8,17 @@ namespace GameTrack.Domain.Services;
 public sealed class StatisticsService
 {
     private readonly IGameRepository _repository;
+    private readonly IUserContextProvider _users;
 
-    public StatisticsService(IGameRepository repository)
+    public StatisticsService(IGameRepository repository, IUserContextProvider users)
     {
         _repository = Guard.NotNull(repository, nameof(repository));
+        _users = Guard.NotNull(users, nameof(users));
     }
 
     public async Task<LibraryStatistics> GetStatisticsAsync(CancellationToken cancellationToken = default)
     {
-        var games = await _repository.GetAllAsync(cancellationToken);
+        var games = await _repository.GetAllAsync(_users.GetRequiredUser(), cancellationToken);
         return LibraryStatisticsCalculator.Calculate(games);
     }
 }

@@ -12,6 +12,11 @@ public interface IAccountRepository
 
     Task<UserAccount?> FindAsync(string email, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Создаёт аккаунт. Логин для БД выводится из имени и email
+    /// (прежнее API логина не передавало). При нарушении уникальности
+    /// email или логина реализация обязана бросать <see cref="Common.ConflictException"/>.
+    /// </summary>
     Task<UserAccount> RegisterAsync(
         string name,
         string email,

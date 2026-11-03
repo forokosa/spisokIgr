@@ -1,8 +1,7 @@
 using GameTrack.Api.Contracts;
 using GameTrack.Api.Controllers;
 using GameTrack.Domain.Services;
-using GameTrack.Infrastructure.Persistence;
-using GameTrack.Infrastructure.Security;
+using GameTrack.Tests.Fakes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,8 +12,8 @@ public sealed class AuthControllerTests
     private static AuthController CreateController()
     {
         var service = new AuthService(
-            new InMemoryUserProfileRepository(),
-            new InMemoryAccountRepository("demo@gametrack.app", "demo1234"));
+            new FakeUserProfileRepository(),
+            new FakeAccountRepository("demo@gametrack.app", "demo1234"));
 
         return new AuthController(service);
     }
